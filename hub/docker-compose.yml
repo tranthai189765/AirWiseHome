@@ -1,0 +1,20 @@
+# AirWise Home hub: docker compose up -d   (dashboard: http://localhost:8000)
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: airwise-mosquitto
+    ports: ["1883:1883"]
+    volumes: ["./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"]
+    restart: unless-stopped
+  hub:
+    build: ./hub_core
+    container_name: airwise-hub
+    environment:
+      MQTT_HOST: mosquitto
+      HOME_ID: n6h01
+      DB_PATH: /app/data/airwise.db
+      CONFIRM_S: "10"
+    volumes: ["./data:/app/data"]
+    ports: ["8000:8000"]
+    depends_on: [mosquitto]
+    restart: unless-stopped

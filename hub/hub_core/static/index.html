@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AirWise Home – Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root { --navy: #1d3557; --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; --bg: #f4f6fa; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--navy); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  header .sub { color: #c7d2fe; font-size: 14px; }
+  .chip { padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .online { background: #16a34a; } .offline { background: #dc2626; } .unknown { background: #6b7280; }
+  header .right { margin-left: auto; font-size: 13px; color: #c7d2fe; }
+  main { padding: 18px 24px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+  .card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .metrics { grid-column: span 12; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .metric .label { font-size: 13px; color: var(--muted); }
+  .metric .value { font-size: 30px; font-weight: 700; margin: 4px 0; }
+  .metric .unit { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .advice { grid-column: span 7; } .controls { grid-column: span 5; }
+  .chart { grid-column: span 7; } .log { grid-column: span 5; }
+  h2 { font-size: 15px; margin: 0 0 10px; color: var(--navy); }
+  .tip { padding: 8px 10px; border-radius: 8px; background: #eef2ff; margin-bottom: 6px; font-size: 14px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .act { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .act:last-child { border-bottom: 0; }
+  .act .name { flex: 1; font-weight: 600; }
+  .act .mode { font-size: 12px; color: var(--muted); }
+  .on { background: #dcfce7; color: #166534; } .off { background: #f3f4f6; color: #374151; }
+  button { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px; }
+  button:hover { background: #f3f4f6; }
+  .pending { font-size: 12px; color: #b45309; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.t { white-space: nowrap; color: var(--muted); width: 64px; }
+  .k-auto { background: #e0f2fe; color: #075985; } .k-manual { background: #fef3c7; color: #92400e; }
+  .k-ack { background: #dcfce7; color: #166534; } .k-state { background: #f3f4f6; color: #374151; }
+  .k-status, .k-warn { background: #fee2e2; color: #991b1b; }
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .advice, .controls, .chart, .log { grid-column: span 12; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>AirWise Home</h1>
+  <span class="sub" id="devname">Phòng ngủ · aw-room-01</span>
+  <span class="chip unknown" id="status">…</span>
+  <span class="right" id="updated"></span>
+</header>
+<main>
+  <section class="metrics">
+    <div class="card metric"><div class="label">CO₂</div><div class="value" id="co2">–</div><span class="badge" id="co2lvl"></span></div>
+    <div class="card metric"><div class="label">PM2.5</div><div class="value" id="pm25">–</div><span class="badge" id="aqi"></span></div>
+    <div class="card metric"><div class="label">Nhiệt độ</div><div class="value" id="temp">–</div><span class="note" id="dew"></span></div>
+    <div class="card metric"><div class="label">Độ ẩm</div><div class="value" id="rh">–</div></div>
+    <div class="card metric"><div class="label">Cửa sổ</div><div class="value" id="window" style="font-size:24px">–</div></div>
+    <div class="card metric"><div class="label">Chuyển động</div><div class="value" id="motion" style="font-size:24px">–</div></div>
+  </section>
+  <section class="card advice">
+    <h2>Trợ lý thông gió</h2>
+    <div id="tips"></div>
+    <div class="note" id="outdoor"></div>
+  </section>
+  <section class="card controls">
+    <h2>Điều khiển thiết bị <span class="note">(trạng thái do thiết bị xác nhận)</span></h2>
+    <div id="acts"></div>
+  </section>
+  <section class="card chart">
+    <h2>CO₂ và PM2.5 – 10 phút gần nhất</h2>
+    <canvas id="chart" height="120"></canvas>
+  </section>
+  <section class="card log">
+    <h2>Nhật ký sự kiện</h2>
+    <table id="events"></table>
+  </section>
+</main>
+<script>
+const DEV = 'aw-room-01';
+const NAMES = { fan_exhaust: 'Quạt hút', purifier: 'Máy lọc khí', light: 'Đèn' };
+const waiting = {};
+const fmt = (iso) => iso ? new Date(iso).toLocaleTimeString('vi-VN', { hour12: false }) : '';
+function aqiLevel(a) {
+  return a <= 50 ? ['Tốt', '#00e400', '#000'] : a <= 100 ? ['Trung bình', '#ffff00', '#000'] : a <= 150 ? ['Kém', '#ff7e00', '#000']
+    : a <= 200 ? ['Xấu', '#ff0000', '#fff'] : a <= 300 ? ['Rất xấu', '#8f3f97', '#fff'] : ['Nguy hại', '#7e0023', '#fff'];
+}
+function co2Level(c) {
+  return c < 800 ? ['Tốt', '#00e400', '#000'] : c < 1000 ? ['Trung bình', '#ffff00', '#000'] : c < 1500 ? ['Kém', '#ff7e00', '#000'] : ['Xấu', '#ff0000', '#fff'];
+}
+function badge(el, [text, bg, fg]) { el.textContent = text; el.style.background = bg; el.style.color = fg; }
+
+const chart = new Chart(document.getElementById('chart'), {
+  type: 'line',
+  data: { labels: [], datasets: [
+    { label: 'CO₂ (ppm)', data: [], borderColor: '#1d4ed8', yAxisID: 'y', tension: .2, pointRadius: 0 },
+    { label: 'PM2.5 (µg/m³)', data: [], borderColor: '#ea580c', yAxisID: 'y1', tension: .2, pointRadius: 0 } ] },
+  options: { animation: false, interaction: { mode: 'index', intersect: false },
+    scales: { y: { title: { display: true, text: 'ppm' }, suggestedMin: 400, suggestedMax: 1500 },
+              y1: { position: 'right', title: { display: true, text: 'µg/m³' }, suggestedMin: 0, suggestedMax: 80, grid: { drawOnChartArea: false } },
+              x: { ticks: { maxTicksLimit: 8 } } } }
+});
+
+async function send(target, value) {
+  const r = await fetch(`/api/devices/${DEV}/actuators`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ target, value }) });
+  const { cmd_id } = await r.json();
+  waiting[target] = 'Đang chờ thiết bị xác nhận…';
+  for (let i = 0; i < 12; i++) {
+    await new Promise((res) => setTimeout(res, 1000));
+    const c = await (await fetch(`/api/commands/${cmd_id}`)).json();
+    if (c.status === 'ok') { delete waiting[target]; break; }
+    if (c.status === 'timeout') { waiting[target] = 'Lệnh không được thiết bị xác nhận'; break; }
+  }
+  refresh();
+}
+
+async function refresh() {
+  const o = await (await fetch('/api/overview')).json();
+  const d = o.devices.find((x) => x.device_id === DEV);
+  document.getElementById('updated').textContent = 'Cập nhật ' + new Date().toLocaleTimeString('vi-VN', { hour12: false });
+  if (!d) return;
+  const st = document.getElementById('status');
+  st.textContent = d.status === 'online' ? 'Trực tuyến' : d.status === 'offline' ? 'Mất kết nối' : 'Chưa rõ';
+  st.className = 'chip ' + (d.status || 'unknown');
+  const t = d.telemetry || {};
+  document.getElementById('co2').innerHTML = `${t.co2 ?? '–'} <span class="unit">ppm</span>`;
+  document.getElementById('pm25').innerHTML = `${t.pm25 ?? '–'} <span class="unit">µg/m³</span>`;
+  document.getElementById('temp').innerHTML = `${t.temp ?? '–'} <span class="unit">°C</span>`;
+  document.getElementById('rh').innerHTML = `${t.rh ?? '–'} <span class="unit">%</span>`;
+  document.getElementById('dew').textContent = t.dew_point != null ? `Điểm sương ${t.dew_point} °C` : '';
+  document.getElementById('window').textContent = t.window_open ? 'Đang mở' : 'Đóng';
+  document.getElementById('motion').textContent = t.motion ? 'Có người' : 'Không';
+  if (t.co2 != null) badge(document.getElementById('co2lvl'), co2Level(t.co2));
+  if (t.aqi != null) { const l = aqiLevel(t.aqi); badge(document.getElementById('aqi'), [`AQI ${t.aqi} · ${l[0]}`, l[1], l[2]]); }
+  document.getElementById('tips').innerHTML = d.advice.map((x) => `<div class="tip">${x}</div>`).join('');
+  document.getElementById('outdoor').textContent =
+    `Ngoài trời: PM2.5 ${o.outdoor.pm25} µg/m³ (${o.outdoor.source} – chưa có node ban công). Luật: CO₂ bật ≥ ${o.rules.co2_on}, tắt ≤ ${o.rules.co2_off} ppm; PM2.5 bật > ${o.rules.pm_on}, tắt ≤ ${o.rules.pm_off} µg/m³; xác nhận ${o.confirm_s} s.`;
+  document.getElementById('acts').innerHTML = Object.keys(NAMES).map((k) => {
+    const v = d.actuators[k] || 'off';
+    const ov = d.override[k] ? `ưu tiên lệnh tay còn ${d.override[k]} s` : 'tự động';
+    return `<div class="act"><span class="name">${NAMES[k]}<br><span class="mode">${ov}</span></span>
+      <span class="badge ${v}">${v === 'on' ? 'BẬT' : 'TẮT'}</span>
+      <button onclick="send('${k}','on')">Bật</button><button onclick="send('${k}','off')">Tắt</button></div>
+      ${waiting[k] ? `<div class="pending">${waiting[k]}</div>` : ''}`;
+  }).join('');
+  const ev = await (await fetch('/api/events?limit=12')).json();
+  document.getElementById('events').innerHTML = ev.map((e) =>
+    `<tr><td class="t">${fmt(e.ts)}</td><td><span class="badge k-${e.kind}">${e.kind}</span> ${e.message}</td></tr>`).join('');
+}
+
+async function refreshChart() {
+  const h = await (await fetch(`/api/history?device_id=${DEV}&minutes=10`)).json();
+  chart.data.labels = h.map((r) => fmt(r.received_at));
+  chart.data.datasets[0].data = h.map((r) => r.co2);
+  chart.data.datasets[1].data = h.map((r) => r.pm25);
+  chart.update();
+}
+refresh(); refreshChart();
+setInterval(refresh, 2000);
+setInterval(refreshChart, 5000);
+</script>
+</body>
+</html>

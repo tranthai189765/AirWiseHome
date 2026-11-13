@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "author": "Nhom 6 - HustStu",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_co2",
+      "top": -50,
+      "left": -290,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_pm",
+      "top": -50,
+      "left": -170,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "sw_window",
+      "top": 80,
+      "left": -110,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir1",
+      "top": 150,
+      "left": -220,
+      "attrs": {}
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": -120,
+      "left": 160,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_fan",
+      "top": 60,
+      "left": 250,
+      "attrs": {
+        "color": "blue"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_pur",
+      "top": 60,
+      "left": 300,
+      "attrs": {
+        "color": "limegreen"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_light",
+      "top": 60,
+      "left": 350,
+      "attrs": {
+        "color": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_fan",
+      "top": 130,
+      "left": 235,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_pur",
+      "top": 130,
+      "left": 285,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r_light",
+      "top": 130,
+      "left": 335,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 180,
+      "left": 160,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "pot_co2:SIG",
+      "esp:34",
+      "orange",
+      []
+    ],
+    [
+      "pot_co2:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "pot_co2:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "pot_pm:SIG",
+      "esp:35",
+      "gold",
+      []
+    ],
+    [
+      "pot_pm:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "pot_pm:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "sw_window:2",
+      "esp:26",
+      "violet",
+      []
+    ],
+    [
+      "sw_window:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "sw_window:3",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "pir1:OUT",
+      "esp:27",
+      "orange",
+      []
+    ],
+    [
+      "pir1:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "pir1:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "oled1:SDA",
+      "esp:21",
+      "green",
+      []
+    ],
+    [
+      "oled1:SCL",
+      "esp:22",
+      "purple",
+      []
+    ],
+    [
+      "oled1:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "oled1:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led_fan:A",
+      "esp:19",
+      "blue",
+      []
+    ],
+    [
+      "led_fan:C",
+      "r_fan:1",
+      "black",
+      []
+    ],
+    [
+      "r_fan:2",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "led_pur:A",
+      "esp:18",
+      "limegreen",
+      []
+    ],
+    [
+      "led_pur:C",
+      "r_pur:1",
+      "black",
+      []
+    ],
+    [
+      "r_pur:2",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "led_light:A",
+      "esp:17",
+      "gold",
+      []
+    ],
+    [
+      "led_light:C",
+      "r_light:1",
+      "black",
+      []
+    ],
+    [
+      "r_light:2",
+      "esp:GND.3",
+      "black",
+      []
+    ],
+    [
+      "dht1:SDA",
+      "esp:15",
+      "green",
+      []
+    ],
+    [
+      "dht1:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "dht1:GND",
+      "esp:GND.3",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

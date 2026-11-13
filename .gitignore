@@ -1,0 +1,6 @@
+hub/data/
+__pycache__/
+*.pyc
+.venv/
+.~lock.*#
+docs/KichBan_ThuyetTrinh_Checkpoint1.md
